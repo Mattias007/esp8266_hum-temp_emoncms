@@ -16,3 +16,4 @@ void ahtstart(){
   }
   Serial.println("AHT10 or AHT20 found");
 }
+

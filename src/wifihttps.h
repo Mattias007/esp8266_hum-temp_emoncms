@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
@@ -87,6 +88,7 @@ void emonCMSConnection() {
 
 
 int lastcommand = 0;
+int lasttemp = 0;
 void ApiConnection() {
 
   if ((WiFiMulti.run() == WL_CONNECTED)) {  
@@ -107,15 +109,15 @@ void ApiConnection() {
         if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
           String payload = http.getString();
           JSONVar data = JSON.parse(payload);
-          String command = data["command"];
-          Serial.println(command);
-
-          if(command == "on" &&  1 != lastcommand){
+          int command = data["command"];
+          int temp = data["targettemp"];
+          if((command == 1 && 1 != lastcommand) || (command == 1 && lasttemp != temp)){
             lastcommand = 1;
-            AcOn(70);
+            lasttemp = temp;
+            AcOn(temp);
             Serial.println("workingon");
           }
-          if(command == "off" && 0 != lastcommand){
+          if(command == 0 && 0 != lastcommand){
             lastcommand = 0;
             AcOff();
             Serial.println("workingoff");
