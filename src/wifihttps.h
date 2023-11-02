@@ -3,9 +3,12 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WebServer.h>
 #include <Arduino_JSON.h>
+#include <ESP8266WiFi.h>
 
+#include "EEPROM.h"
 #include "ACcontroll.h"
 #include "sensordata.h"
+
 
 HTTPClient http;
 WiFiClient client;
@@ -16,15 +19,14 @@ IPAddress local_IP(192,168,4,22);
 IPAddress gateway(192,168,4,9);
 IPAddress subnet(255,255,255,0);
 
-const char *ssid = "MatuLiisu";
-const char *password = "matuliisu";
+
 const char *name = "ACTemp0";
 
-  String html = "<html><body><h1>Wifi Networks</h1>"; // page start
+String html = "<html><body><h1>Wifi Networks</h1>"; // page start
 
 void wifishowhtml(int networksFound)
 {
-  html += "<form action='/wifi'>";
+  html += "<form method='post' action='/wifi'>";
   html += "<select id='wifi' name='wifi'>";
 
   for (int i = 0; i < networksFound; i++)
@@ -32,11 +34,24 @@ void wifishowhtml(int networksFound)
     html += ("<option value='"+  WiFi.SSID(i)+ "'>" + WiFi.SSID(i) +"</option>");
   }
 
-  html += "</select><input type='submit'>";
+  html += "</select>";
+  html += "<input id='password' name='password' type='text'><input type='submit'>";
+
 }
 
 
+void handlePost() {
+  if (server.hasArg("wifi") && server.hasArg("password")) {
+    String ssid = server.arg("wifi");
+    String password  = server.arg("password");
 
+    WrirteWIFI(ssid,password);
+    
+    server.send(200, "text/plain", "POST request received and processed.");
+  } else {
+    server.send(400, "text/plain", "Bad Request");
+  }
+}
 
 
 void handleRoot() {
@@ -64,18 +79,17 @@ void Wifisetup(){
   Serial.print("Soft-AP IP address = ");
   Serial.println(WiFi.softAPIP());
 
-  server.on("/", handleRoot);               // Call the 'handleRoot' function when a client requests URI "/"
+  server.on("/", handleRoot);
+  server.on("/wifi", HTTP_POST, handlePost);           // Call the 'handleRoot' function when a client requests URI "/"
   server.onNotFound(handleNotFound);  
   server.begin(); 
 }
 
 
-
-
 void Wifistart(){
     WiFi.mode(WIFI_STA);
 
-    WiFiMulti.addAP(ssid, password);
+    // WiFiMulti.addAP(ssid, password);
     while (WiFiMulti.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     delay(250);
     Serial.print('.');
@@ -84,11 +98,6 @@ void Wifistart(){
 
 
 void emonCMSConnection() {
-
-  // wait for WiFi connection
-
-
-  if ((WiFiMulti.run() == WL_CONNECTED)) {  
 
     String URL = "http://85.89.32.58/input/post?node=ACT&apikey=17bda09eb30a8f93c375d009a6066c2c&fulljson={\"ACTemp0\":" + String(temp.temperature)  + "}";
 
@@ -143,15 +152,12 @@ void emonCMSConnection() {
       Serial.println("[HTTP] Unable to connect");
     }
   }
-}
-
 
 
 int lastcommand = 0;
 int lasttemp = 0;
 void ApiConnection() {
-
-  if ((WiFiMulti.run() == WL_CONNECTED)) {  
+ 
 
     String URL = "http://acapi.tak21maasik.itmajakas.ee/ControllAC?name=" + String(name) + "";
 
@@ -192,4 +198,3 @@ void ApiConnection() {
       Serial.println("[HTTP] Unable to connect");
     }
   }
-}
