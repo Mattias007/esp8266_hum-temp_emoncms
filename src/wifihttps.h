@@ -1,7 +1,7 @@
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266WebServer.h>
 #include <Arduino_JSON.h>
 
 #include "ACcontroll.h"
@@ -10,16 +10,76 @@
 HTTPClient http;
 WiFiClient client;
 ESP8266WiFiMulti WiFiMulti;
+ESP8266WebServer server(80); 
+
+IPAddress local_IP(192,168,4,22);
+IPAddress gateway(192,168,4,9);
+IPAddress subnet(255,255,255,0);
 
 const char *ssid = "MatuLiisu";
 const char *password = "matuliisu";
 const char *name = "ACTemp0";
+
+  String html = "<html><body><h1>Wifi Networks</h1>"; // page start
+
+void wifishowhtml(int networksFound)
+{
+  html += "<form action='/wifi'>";
+  html += "<select id='wifi' name='wifi'>";
+
+  for (int i = 0; i < networksFound; i++)
+  {
+    html += ("<option value='"+  WiFi.SSID(i)+ "'>" + WiFi.SSID(i) +"</option>");
+  }
+
+  html += "</select><input type='submit'>";
+}
+
+
+
+
+
+void handleRoot() {
+  html += "</body></html>";
+  server.send(200,"content" ,html);   // Send HTTP status 200 (Ok) and send some text to the browser/client
+}
+
+void handleNotFound(){
+  server.send(404, "text/plain", "404: Not found"); // Send HTTP status 404 (Not Found) when there's no handler for the URI in the request
+}
+
+
+void Wifisetup(){
+
+
+  Serial.println();
+
+  Serial.print("Setting soft-AP configuration ... ");
+  Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ? "Ready" : "Failed!");
+
+  Serial.print("Setting soft-AP ... ");
+  Serial.println(WiFi.softAP("ESPsoftAP_01") ? "Ready" : "Failed!");
+
+
+  Serial.print("Soft-AP IP address = ");
+  Serial.println(WiFi.softAPIP());
+
+  server.on("/", handleRoot);               // Call the 'handleRoot' function when a client requests URI "/"
+  server.onNotFound(handleNotFound);  
+  server.begin(); 
+}
+
+
 
 
 void Wifistart(){
     WiFi.mode(WIFI_STA);
 
     WiFiMulti.addAP(ssid, password);
+    while (WiFiMulti.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
+    delay(250);
+    Serial.print('.');
+  } 
 }
 
 

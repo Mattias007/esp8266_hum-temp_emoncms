@@ -1,27 +1,36 @@
 #include <Arduino.h>
 #include "wifihttps.h"
-
-
 void setup() {
 Serial.begin(9600);
 
-Wifistart();
 
+WiFi.scanNetworksAsync(wifishowhtml);
+
+Wifisetup();
 ac.begin();
 
 ahtstart();
 
 }
 
+unsigned long previousMillis = 0;
+const long interval = 10000; 
+
 void loop() {
 
-ahtdata();
+unsigned long currentMillis = millis();
 
-emonCMSConnection();
+if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    ahtdata();
 
-ApiConnection();
+    emonCMSConnection();
 
-delay(10000);
+    ApiConnection();
+
 }
 
+server.handleClient();  
+
+}
 

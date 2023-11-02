@@ -6,7 +6,6 @@ sensors_event_t humidity, temp;
 
 void ahtdata(){
     aht.getEvent(&humidity, &temp);
-    delay(5);
 }
 
 void ahtstart(){
