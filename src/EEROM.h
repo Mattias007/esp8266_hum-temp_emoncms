@@ -1,37 +1,49 @@
 #include <Arduino.h>
 #include <EEPROM.h>  // Long term memory LIMITED CYCELS !!!
 
-void WrirteWIFI(String wifi, String pass){
-    Serial.print(wifi);
-    Serial.print(pass);
 
-    EEPROM.begin(24);
-    for (int i = 0; i < wifi.length(); i++) {
+void WrirteWIFI(String wifi, String pass){
+    Serial.println(wifi);
+    Serial.println(pass);
+
+    EEPROM.begin(512);
+    int wifilen = wifi.length();
+        EEPROM.write(500, wifilen);
+    for (int i = 0; i < wifilen; i++) {
         EEPROM.write(i, wifi[i]);
     }
-
-    for (int i = 0; i < pass.length(); i++) {
-        EEPROM.write(i + 200, pass[i]);
+    int passlen = pass.length();
+    EEPROM.write(501, passlen);
+    for (int i = 0; i < passlen; i++) {
+        EEPROM.write(i + wifilen, pass[i]);
     }
 
     EEPROM.commit();
+    EEPROM.end();
+    Serial.print("commited");
 }
 
 String readWIFI(){
-
-  String dataFromEEPROM = "";
-  for (int i = 0; i < 14; i++) { // Length of "Hello, EEPROM!"
-    dataFromEEPROM += char(EEPROM.read(i));
-  }
-  Serial.println("Data from EEPROM: " + dataFromEEPROM);
+    EEPROM.begin(512);
+    int len = EEPROM.read(500);
+    String dataFromEEPROM = "";
+    for (int i = 0; i < len; i++) {
+        dataFromEEPROM += char(EEPROM.read(i));
+    }
+    EEPROM.end();
+    return dataFromEEPROM;
 }
 
 String readpass(){
+    EEPROM.begin(512);
+    int wifilen = EEPROM.read(500);
+    int len = EEPROM.read(501);
+    String dataFromEEPROM = "";
+    for (int i = 0; i < len; i++) {
 
-  String dataFromEEPROM = "";
-  for (int i = 0; i < 14; i++) { // Length of "Hello, EEPROM!"
-    dataFromEEPROM += char(EEPROM.read(i));
-  }
-  Serial.println("Data from EEPROM: " + dataFromEEPROM);
-  
+        dataFromEEPROM += char(EEPROM.read(i+wifilen));
+    }
+    EEPROM.end();
+    return dataFromEEPROM;
+
 }

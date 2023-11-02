@@ -5,7 +5,7 @@
 #include <Arduino_JSON.h>
 #include <ESP8266WiFi.h>
 
-#include "EEPROM.h"
+#include "EEROM.h"
 #include "ACcontroll.h"
 #include "sensordata.h"
 
@@ -48,6 +48,8 @@ void handlePost() {
     WrirteWIFI(ssid,password);
     
     server.send(200, "text/plain", "POST request received and processed.");
+    delay(2000);
+    ESP.restart();
   } else {
     server.send(400, "text/plain", "Bad Request");
   }
@@ -88,8 +90,7 @@ void Wifisetup(){
 
 void Wifistart(){
     WiFi.mode(WIFI_STA);
-
-    // WiFiMulti.addAP(ssid, password);
+    WiFiMulti.addAP(readWIFI().c_str(), readpass().c_str());
     while (WiFiMulti.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     delay(250);
     Serial.print('.');
