@@ -32,28 +32,96 @@ String html =
   "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
   "<title>Document</title>"
   "<style>"
-    "h1 {color:red;}"
+    "*{" 
+      "margin: 0;"
+      "padding: 0;"
+      "box-sizing: border-box;"
+    "}"
+    "body{" 
+      "display: flex;"
+      "flex-direction: column;"
+      "align-items: center;"
+      "justify-content: space-between;"
+      "min-height: 100vh;"
+      "min-width: 100vw;"
+    "}"
+    "nav{" 
+      "background-color: aliceblue;"
+      "padding-top: 10px;"
+      "padding-bottom: 10px;"
+      "width: 100vw;"
+      "gap: 5px;"
+      "display: flex;"
+      "justify-content: space-around;"
+      "flex-wrap: wrap;"
+      "color: #003D8F;"
+    "}"
+    "nav a{" 
+      "font-size: 24px;"
+      "text-decoration: none;"
+      "color: #003D8F;"
+    "}"
+    "div form{" 
+      "display: grid;"
+    "}"
+    "footer{" 
+      "background-color: aliceblue;"
+      "color: #003D8F;"
+      "width: 100vw;"
+      "padding-top: 10px;"
+      "padding-bottom: 10px;"
+      "display: flex;"
+      "flex-direction: column;"
+      "align-items: center;"
+    "}"
+    "footer div{" 
+      "display: grid;"
+      "gap: 10px;"
+      "grid-template-columns: auto auto;"
+    "}"
   "</style>"
 "</head>"
 "<body>"
-"<h1>Wifi Networks</h1>";
+    "<nav>"
+      "<h1>Teetormaja</h1>"
+      "<a href='http://https://www.tt.ee'>www.tt.ee</a>"
+    "</nav>"
+"<div>"
+"<h1>Wifi Connect</h1>";
+
+
+
 
 void wifishowhtml(int networksFound)
 {
-  html += "<form method='post' action='/wifi'>";
-  html += "<select id='wifi' name='wifi'>";
+  html += "<form method='post' action='/wifi'>"
+  "<label for='wifi'>Wifi Networks:</label>"
+  "<select id='wifi' name='wifi'>";
 
   for (int i = 0; i < networksFound; i++)
   {
     html += ("<option value='" + WiFi.SSID(i) + "'>" + WiFi.SSID(i) + "</option>");
   }
 
-  html += "</select>";
-  html += "<input id='password' name='password' type='text'><input type='submit'>";
+  html += "</select>"
+  "<label for='password'>Wifi password:</label>"
+  "<input id='password' name='password' type='text'><input type='submit'>"
+  "</div>"
+  "<footer>"
+  "<h1>Võta Ühendust</h1>"
+  "<div>"
+    "<p>Aadress:</p>"
+    "<p>Rohu 6a, Kuressaare 93819, Eesti Vabariik</p>"
+    "<p>Telefon:</p>"
+    "<p>45 20 200</p>"
+  "</div>"
+  "</footer>";
+
 }
 
 void handlePost()
 {
+  
   if (server.hasArg("wifi") && server.hasArg("password"))
   {
     String ssid = server.arg("wifi");
